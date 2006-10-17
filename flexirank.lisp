@@ -58,6 +58,7 @@
 (defclass flexirank-mixin () ())
 
 (defmethod move-elements :before ((chain flexirank-mixin) to from start1 start2 end2)
+  (declare (ignore to))
   (loop for old from start2 below end2
 	for new from start1
 	do (let ((element (aref from old)))

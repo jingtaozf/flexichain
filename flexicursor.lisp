@@ -96,8 +96,7 @@ sequence was inserted using INSERT."))
 (defgeneric (setf element>) (object cursor)
   (:documentation "Replaces the element immediately after the cursor."))
 
-(defclass standard-cursorchain
-    (weak-pointer-container-mixin cursorchain standard-flexichain)
+(defclass standard-cursorchain (cursorchain standard-flexichain)
   ((cursors :initform '()))
   (:documentation "The standard instantiable subclass of CURSORCHAIN"))
 
@@ -116,7 +115,7 @@ sequence was inserted using INSERT."))
   (with-slots (index chain) cursor
      (setf index (position-index chain (1- position)))
      (with-slots (cursors) chain
-	(push (make-weak-pointer cursor chain) cursors))))
+	(push (make-weak-pointer cursor) cursors))))
 
 (defmethod initialize-instance :after ((cursor right-sticky-flexicursor)
 				       &rest initargs &key (position 0))
@@ -124,12 +123,12 @@ sequence was inserted using INSERT."))
   (with-slots (index chain) cursor
      (setf index (position-index chain position))
      (with-slots (cursors) chain
-	(push (make-weak-pointer cursor chain) cursors))))
+	(push (make-weak-pointer cursor) cursors))))
 
-(defun adjust-cursors (chain cursors start end increment)
+(defun adjust-cursors (cursors start end increment)
   (let ((acc '()))
     (loop
-       for cursor = (and cursors (weak-pointer-value (car cursors) chain))
+       for cursor = (and cursors (weak-pointer-value (car cursors)))
        while cursors
        do (cond ((null cursor)
 		 (pop cursors))
@@ -149,7 +148,7 @@ sequence was inserted using INSERT."))
 (defmethod move-elements :after ((cc standard-cursorchain) to from start1 start2 end2)
   (declare (ignore to from))
   (with-slots (cursors) cc
-     (setf cursors (adjust-cursors cc cursors start2 (1- end2) (- start1 start2)))))
+     (setf cursors (adjust-cursors cursors start2 (1- end2) (- start1 start2)))))
 
 (defmethod clone-cursor ((cursor standard-flexicursor))
   (make-instance (class-of cursor)
@@ -195,7 +194,7 @@ sequence was inserted using INSERT."))
   (with-slots (cursors) chain
      (let* ((old-index (position-index chain position)))
        (loop for cursor-wp in cursors
-	     as cursor = (weak-pointer-value cursor-wp chain)
+	     as cursor = (weak-pointer-value cursor-wp)
 	     when (and cursor (= old-index (flexicursor-index cursor)))
 	       do (typecase cursor
 		    (right-sticky-flexicursor (incf (cursor-pos cursor)))

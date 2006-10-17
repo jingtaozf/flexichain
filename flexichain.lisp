@@ -99,6 +99,12 @@ in the chain. If POSITION is out of range (less than 0 or greater
 than the length of CHAIN, the FLEXI-POSITION-ERROR condition will be
 signaled."))
 
+(defgeneric insert-vector* (chain position vector)
+  (:documentation "Inserts the elements of VECTOR before the
+element at POSITION in the chain. If POSITION is out of
+range (less than 0 or greater than the length of CHAIN, the
+FLEXI-POSITION-ERROR condition will be signaled."))
+
 (defgeneric delete* (chain position)
   (:documentation "Deletes an element at POSITION of the chain.
 If POSITION is out of range (less than 0 or greater than or equal

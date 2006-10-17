@@ -34,60 +34,52 @@ indicating whether an element was found or not."
         (values nil nil)
         (values (elt sequence position) t))))
 
-;;; CMUCL and SBCL have direct support for weak pointers. In OpenMCL and
-;;; Allegro weak references are only supported via weak hash tables. This class
-;;; provides the means for other classes to manage their weak references.
-;;; TODO: check other CL implementations behavior wrt. return values
-(defclass weak-pointer-container-mixin ()
-  (#+(or openmcl allegro)
-  (weak-hash :initform (make-hash-table :test #'eql
-					 ;; Get it together guys!
-					 #+openmcl :weak #+openmcl :value
-					 #+allegro :values #+allegro :weak))
-  (key-counter :initform 0))
-  (:documentation "Support for weak references, if needed"))
+;;;; Weak pointers
 
-(defgeneric make-weak-pointer (object container))
+#+:openmcl
+(defvar *weak-pointers* (make-hash-table :test 'eq :weak :value)
+  "Weak value hash-table mapping between pseudo weak pointers and its values.")
 
-#+(or sbcl cmu)
-(defmethod make-weak-pointer (object container)
-  (declare (ignore container))
-    #+cmu (extensions:make-weak-pointer object)
-    #+sbcl (sb-ext:make-weak-pointer object))
+#+:openmcl
+(defstruct (weak-pointer (:constructor %make-weak-pointer)))
 
-#+(or openmcl allegro)
-(defmethod make-weak-pointer (object (container weak-pointer-container-mixin))
-  (let ((key (incf (slot-value container 'key-counter))))
-    (setf (gethash key (slot-value container 'weak-hash)) object)
-    key))
+(defun make-weak-pointer (object)
+  "Creates a new weak pointer which points to OBJECT. For
+   portability reasons, OBJECT most not be NIL."
+  (assert (not (null object)))
+  #+:sbcl (sb-ext:make-weak-pointer object)
+  #+:cmu (ext:make-weak-pointer object)
+  #+:clisp (ext:make-weak-pointer object)
+  #+:allegro
+  (let ((wv (excl:weak-vector 1)))
+    (setf (svref wv 0) object)
+    wv)
+  #+:openmcl
+  (let ((wp (%make-weak-pointer)))
+    (setf (gethash wp *weak-pointers*) object)
+    wp)
+  #+:corman (ccl:make-weak-pointer object)
+  #+:lispworks
+  (let ((array (make-array 1)))
+    (hcl:set-array-weak array t)
+    (setf (svref array 0) object)
+    array)
+  #-(or :sbcl :cmu :clisp :allegro :openmcl :corman :lispworks)
+  object)
 
-(defgeneric weak-pointer-value (weak-pointer container))
+(defun weak-pointer-value (weak-pointer)
+  "If WEAK-POINTER is valid, returns its value. Otherwise, returns NIL."
+  #+:sbcl (prog1 (sb-ext:weak-pointer-value weak-pointer))
+  #+:cmu (prog1 (ext:weak-pointer-value weak-pointer))
+  #+:clisp (prog1 (ext:weak-pointer-value weak-pointer))
+  #+:allegro (svref weak-pointer 0)
+  #+:openmcl (prog1 (gethash weak-pointer *weak-pointers*))
+  #+:corman (ccl:weak-pointer-obj weak-pointer)
+  #+:lispworks (svref weak-pointer 0)
+  #-(or :sbcl :cmu :clisp :allegro :openmcl :corman :lispworks)
+  weak-pointer)
 
-#+(or sbcl cmu)
-(defmethod weak-pointer-value (weak-pointer container)
-  (declare (ignore container))
-  #+cmu (extensions:weak-pointer-value weak-pointer)
-  #+sbcl (sb-ext:weak-pointer-value weak-pointer))
-
-#+(or openmcl allegro)
-(defmethod weak-pointer-value
-    (weak-pointer (container weak-pointer-container-mixin))
-  (let* ((table (slot-value container 'weak-hash))
-	 (val (gethash weak-pointer table)))
-    #+allegro
-    (unless val
-      (remhash weak-pointer table))
-    val))
-
-#-(or sbcl cmu openmcl)
-(progn
-  (eval-when (:evaluate :compile-toplevel :load-toplevel)
-    (warn "No support for weak pointers in this implementation. Things may
-get big and slow")
-    )
-  (defmethod make-weak-pointer (object container)
-    (declare (ignore container))
-    object)
-  (defmethod weak-pointer-value (weak-pointer container)
-    (declare (ignore container))
-    weak-pointer))
+#-(or :sbcl :cmu :clisp :allegro :openmcl :corman :lispworks)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (warn "No support for weak pointers in this implementation. ~
+         Things may get big and slow."))
