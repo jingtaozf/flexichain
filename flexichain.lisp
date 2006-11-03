@@ -154,7 +154,10 @@ at position 0 is now at position N."))
 
 (defmethod initialize-instance :after ((chain standard-flexichain)
                                        &rest initargs
-                                       &key initial-contents)
+                                       &key
+                                       initial-contents
+                                       (initial-nb-elements 0)
+                                       (initial-element nil))
   (declare (ignore initargs))
   ;; Check initial-contents if provided
   (unless (null initial-contents)
@@ -169,22 +172,32 @@ at position 0 is now at position N."))
                                offending-element element-type)))))
   ;; Initialize slots
   (with-slots (element-type fill-element buffer) chain
-     (let* ((data-length (length initial-contents))
+     (let* ((data-length (if (> (length initial-contents) initial-nb-elements)
+                             (length initial-contents)
+                             initial-nb-elements))
 	    (size (required-space chain data-length))
 	    (fill-size (- size data-length 2))
 	    (sentinel-list (make-list 2 :initial-element fill-element))
 	    (fill-list (make-list fill-size :initial-element fill-element)))
        (setf buffer
-	     (make-array size
-			 :element-type element-type
-			 :initial-contents (concatenate 'list
-							sentinel-list
-							initial-contents
-							fill-list)))))
-  (with-slots (gap-start gap-end data-start) chain
-     (setf gap-start (+ 2 (length initial-contents))
-	   gap-end 0
-	   data-start 1)))
+             (if initial-contents
+                 (make-array size
+                             :element-type element-type
+                             :initial-contents (concatenate 'list
+                                                            sentinel-list
+                                                            initial-contents
+                                                            fill-list))
+                 (let ((arr (make-array size
+                                        :element-type element-type
+                                        :initial-element initial-element)))
+                   (fill arr fill-element :end (length sentinel-list))
+                   (fill arr fill-element
+                         :start (+ (length sentinel-list) initial-nb-elements)
+                         :end size))))
+       (with-slots (gap-start gap-end data-start) chain
+         (setf gap-start (+ 2 data-length)
+               gap-end 0
+               data-start 1)))))
 
 (defmacro with-virtual-gap ((bl ds gs ge) chain &body body)
   (let ((c (gensym)))
@@ -252,7 +265,7 @@ element of the CHAIN."
   (with-slots (element-type buffer gap-start) chain
      (assert (<= 0 position (nb-elements chain)) ()
 	     'flexi-position-error :chain chain :position position)
-     (assert (typep (array-element-type  vector) element-type) ()
+     (assert (subtypep (array-element-type  vector) element-type) ()
 	     'flexi-incompatible-type-error :element vector :chain chain)
      (ensure-gap-position chain position)
      (ensure-room chain (+ (nb-elements chain) (length vector)))
