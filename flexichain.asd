@@ -29,7 +29,7 @@
 ;; for testing.
 (defsystem :flexichain
   :name "flexichain"
-  :version "1.1" 
+  :version "1.2" 
   :components ((:file "flexichain-package")
                (:file "utilities" :depends-on ("flexichain-package"))
                (:file "flexichain" :depends-on ("utilities" "flexichain-package"))
