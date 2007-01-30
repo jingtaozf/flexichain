@@ -18,16 +18,10 @@
 ;;; License along with this library; if not, write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-
-(defpackage #:flexichain-system
-  (:use #:asdf #:common-lisp))
-
-(in-package #:flexichain-system)
-
 ;; The tester is not included, for it depends on clim.  The stupid
 ;; implementation has also been left out, since it seems mostly useful
 ;; for testing.
-(defsystem :flexichain
+(asdf:defsystem :flexichain
   :name "flexichain"
   :version "1.2" 
   :components ((:file "flexichain-package")
