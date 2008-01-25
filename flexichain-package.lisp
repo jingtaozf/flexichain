@@ -25,7 +25,7 @@
 	   #:flexi-error #:flexi-initialization-error
 	   #:flexi-position-error #:flexi-incompatible-type-error
 	   #:nb-elements #:flexi-empty-p
-	   #:insert* #:insert-vector* #:element* #:delete*
+	   #:insert* #:insert-vector* #:element* #:delete* #:delete-elements*
 	   #:push-start #:pop-start #:push-end #:pop-end #:rotate
            #:cursorchain #:standard-cursorchain 
 	   #:flexicursor #:standard-flexicursor

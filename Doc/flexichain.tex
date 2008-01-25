@@ -175,6 +175,15 @@ Delete an element at \arg{position} of the flexichain.  If
 to the length of \arg{chain}), the \cl{flexi-position} condition will be
 signaled.
 
+\Defgeneric {delete-elements*} {chain position n}
+
+Delete N elements at \arg{position} of the flexichain. If
+$\arg{position}+\arg{N}$ is out of range (less than $0$ or greater
+than or equal to the length of \arg{chain}, the
+\cl{flexi-position-error} condition will be signaled, and nothing will
+be deleted. \arg{n} can be negative, in which case elements will be
+deleted before \arg{position}.
+
 \Defgeneric {element*} {chain position}
 
 Return the element at \arg{position} of the \arg{chain}.  If

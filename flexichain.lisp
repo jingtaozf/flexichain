@@ -111,6 +111,13 @@ If POSITION is out of range (less than 0 or greater than or equal
 to the length of CHAIN, the FLEXI-POSITION-ERROR condition
 will be signaled."))
 
+(defgeneric delete-elements* (chain position n)
+  (:documentation "Delete N elements at POSITION of the chain. If
+POSITION+N is out of range (less than 0 or greater than or equal
+to the length of CHAIN, the FLEXI-POSITION-ERROR condition will
+be signaled. N can be negative, in which case elements will be
+deleted before POSITION."))
+
 (defgeneric element* (chain position)
   (:documentation "Returns the element at POSITION of the chain.
 If POSITION is out of range (less than 0 or greater than or equal
@@ -287,6 +294,23 @@ element of the CHAIN."
     (when (and (> (length buffer) (+ min-size 2))
 	       (< (+ (nb-elements chain) 2) (/ (length buffer) (square expand-factor))))
       (decrease-buffer-size chain))))
+
+(defmethod delete-elements* ((chain standard-flexichain) position n)
+  (unless (zerop n)
+    (with-slots (buffer expand-factor min-size fill-element gap-end gap-start) chain
+      (when (minusp n)
+        (incf position n)
+        (setf n (* -1 n)))
+      (assert (<= 0 (+ position n) (nb-elements chain)) ()
+              'flexi-position-error :chain chain :position position)
+      (ensure-gap-position chain position)
+      (fill-gap chain gap-end (+ gap-end n))
+      (incf gap-end n)
+      (when (= gap-end (length buffer))
+        (setf gap-end 0))
+      (when (and (> (length buffer) (+ min-size 2))
+                 (< (+ (nb-elements chain) 2) (/ (length buffer) (square expand-factor))))
+        (decrease-buffer-size chain)))))
 
 (defmethod element* ((chain standard-flexichain) position)
   (with-slots (buffer) chain

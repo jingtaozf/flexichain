@@ -23,7 +23,7 @@
 ;; for testing.
 (asdf:defsystem :flexichain
   :name "flexichain"
-  :version "1.2" 
+  :version "1.3" 
   :components ((:file "flexichain-package")
                (:file "utilities" :depends-on ("flexichain-package"))
                (:file "flexichain" :depends-on ("utilities" "flexichain-package"))
