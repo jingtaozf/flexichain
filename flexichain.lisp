@@ -297,15 +297,24 @@ element of the CHAIN."
 
 (defmethod delete-elements* ((chain standard-flexichain) position n)
   (unless (zerop n)
-    (with-slots (buffer expand-factor min-size fill-element gap-end gap-start) chain
+    (with-slots (buffer expand-factor min-size gap-end data-start) chain
       (when (minusp n)
         (incf position n)
         (setf n (* -1 n)))
       (assert (<= 0 (+ position n) (nb-elements chain)) ()
               'flexi-position-error :chain chain :position position)
       (ensure-gap-position chain position)
-      (fill-gap chain gap-end (+ gap-end n))
-      (incf gap-end n)
+      ;; Two cases to consider - one where position+n is wholly on
+      ;; this side of the gap in buffer, and one where part of it is
+      ;; "wrapped around" to the beginning of buffer.
+      (cond ((>= (length buffer) (+ gap-end n))
+             (fill-gap chain gap-end (+ gap-end n))
+             (incf gap-end n))
+            (t (let ((surplus-elements (- n (- (length buffer) gap-end))))
+                 (fill-gap chain gap-end (length buffer))
+                 (fill-gap chain 0 surplus-elements)
+                 (setf gap-end surplus-elements
+                       data-start (1+ gap-end)))))
       (when (= gap-end (length buffer))
         (setf gap-end 0))
       (when (and (> (length buffer) (+ min-size 2))

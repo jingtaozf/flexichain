@@ -204,17 +204,15 @@ sequence was inserted using INSERT."))
       (incf position n)
       (setf n (* -1 n)))
     (unless (zerop n)
-      (let* ((start-index (position-index chain position))
-             (end-index (position-index chain (+ position n -1))))
-        (loop for cursor-wp in cursors
-           as cursor = (weak-pointer-value cursor-wp)
-           when (and cursor (<= start-index (flexicursor-index cursor)
-                                end-index))
-           do (typecase cursor
-                (right-sticky-flexicursor (setf (cursor-pos cursor)
-                                                (+ position n)))
-                (left-sticky-flexicursor (setf (cursor-pos cursor)
-                                               position))))))))
+      (loop for cursor-wp in cursors
+         as cursor = (weak-pointer-value cursor-wp)
+         when (and cursor (<= position (cursor-pos cursor)
+                              (+ position n)))
+         do (typecase cursor
+              (right-sticky-flexicursor (setf (cursor-pos cursor)
+                                              (+ position n)))
+              (left-sticky-flexicursor (setf (cursor-pos cursor)
+                                             position)))))))
 
 (defmethod delete> ((cursor standard-flexicursor) &optional (n 1))
   (let ((chain (chain cursor))
