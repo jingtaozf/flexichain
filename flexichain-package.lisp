@@ -22,22 +22,22 @@
 (defpackage :flexichain
   (:use :common-lisp)
   (:export #:flexichain #:standard-flexichain
-	   #:flexi-error #:flexi-initialization-error
-	   #:flexi-position-error #:flexi-incompatible-type-error
-	   #:nb-elements #:flexi-empty-p
-	   #:insert* #:insert-vector* #:element* #:delete* #:delete-elements*
-	   #:push-start #:pop-start #:push-end #:pop-end #:rotate
+           #:flexi-error #:flexi-initialization-error
+           #:flexi-position-error #:flexi-incompatible-type-error
+           #:nb-elements #:flexi-empty-p
+           #:insert* #:insert-vector* #:element* #:delete* #:delete-elements*
+           #:push-start #:pop-start #:push-end #:pop-end #:rotate
            #:cursorchain #:standard-cursorchain 
-	   #:flexicursor #:standard-flexicursor
-	   #:left-sticky-flexicursor #:right-sticky-flexicursor
-	   #:chain
+           #:flexicursor #:standard-flexicursor
+           #:left-sticky-flexicursor #:right-sticky-flexicursor
+           #:chain
            #:clone-cursor #:cursor-pos
            #:at-beginning-error #:at-end-error
-	   #:at-beginning-p #:at-end-p
-	   #:move> #:move<
-	   #:insert #:insert-sequence
-	   #:element< #:element> #:delete< #:delete>
-	   #:flexirank-mixin #:element-rank-mixin #:rank
-	   #:flexi-first-p #:flexi-last-p
-	   #:flexi-next #:flexi-prev))
+           #:at-beginning-p #:at-end-p
+           #:move> #:move<
+           #:insert #:insert-sequence
+           #:element< #:element> #:delete< #:delete>
+           #:flexirank-mixin #:element-rank-mixin #:rank
+           #:flexi-first-p #:flexi-last-p
+           #:flexi-next #:flexi-prev))
 

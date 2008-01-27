@@ -60,21 +60,21 @@
 (defmethod move-elements :before ((chain flexirank-mixin) to from start1 start2 end2)
   (declare (ignore to))
   (loop for old from start2 below end2
-	for new from start1
-	do (let ((element (aref from old)))
-	     (when (typep element 'element-rank-mixin)
-	       (setf (index element) new)))))
+        for new from start1
+        do (let ((element (aref from old)))
+             (when (typep element 'element-rank-mixin)
+               (setf (index element) new)))))
 
 (defmethod insert* :after ((chain flexirank-mixin) position (object element-rank-mixin))
   (setf (index object) (position-index chain position)
-	(chain object) chain))
+        (chain object) chain))
 
 (defmethod (setf element*) :after ((object element-rank-mixin) (chain flexirank-mixin) position)
   (setf (index object) (position-index chain position)
-	(chain object) chain))
+        (chain object) chain))
 
 (defmethod insert-vector* :after ((chain flexirank-mixin) position vector)
   (loop for elem across vector
-	for pos from position
-	do (setf (index elem) (position-index chain pos)
-		 (chain elem) chain)))
+        for pos from position
+        do (setf (index elem) (position-index chain pos)
+                 (chain elem) chain)))

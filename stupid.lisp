@@ -6,21 +6,21 @@
 (defpackage :stupid
   (:use :common-lisp)
   (:export #:flexichain #:standard-flexichain
-	   #:flexi-error #:flexi-initialization-error
-	   #:flexi-position-error #:flexi-incompatible-type-error
-	   #:nb-elements #:flexi-empty-p
-	   #:insert* #:element* #:delete*
-	   #:push-start #:pop-start #:push-end #:pop-end #:rotate
+           #:flexi-error #:flexi-initialization-error
+           #:flexi-position-error #:flexi-incompatible-type-error
+           #:nb-elements #:flexi-empty-p
+           #:insert* #:element* #:delete*
+           #:push-start #:pop-start #:push-end #:pop-end #:rotate
            #:cursorchain #:standard-cursorchain 
-	   #:flexicursor #:standard-flexicursor
-	   #:left-sticky-flexicursor #:right-sticky-flexicursor
-	   #:chain
+           #:flexicursor #:standard-flexicursor
+           #:left-sticky-flexicursor #:right-sticky-flexicursor
+           #:chain
            #:clone-cursor #:cursor-pos
            #:at-beginning-error #:at-end-error
-	   #:at-beginning-p #:at-end-p
-	   #:move> #:move<
-	   #:insert #:insert-sequence
-	   #:element< #:element> #:delete< #:delete>))
+           #:at-beginning-p #:at-end-p
+           #:move> #:move<
+           #:insert #:insert-sequence
+           #:element< #:element> #:delete< #:delete>))
 
 (in-package :stupid)
 
@@ -118,17 +118,17 @@ at position 0 is now at position N."))
 
 (defmethod insert* ((chain standard-flexichain) position object)
   (assert (<= 0 position (nb-elements chain)) ()
-	  'flexi-position-error :chain chain :position position)
+          'flexi-position-error :chain chain :position position)
   (let* ((remainder (nthcdr (* 2 position) (elements chain))))
     (push (remove-if-not (lambda (x) (typep x 'right-sticky-flexicursor)) (car remainder))
-	  (cdr remainder))
+          (cdr remainder))
     (push object (cdr remainder))
     (setf (car remainder)
-	  (remove-if (lambda (x) (typep x 'right-sticky-flexicursor)) (car remainder)))))
+          (remove-if (lambda (x) (typep x 'right-sticky-flexicursor)) (car remainder)))))
 
 (defmethod delete* ((chain standard-flexichain) position)
   (assert (< -1 position (nb-elements chain)) ()
-	  'flexi-position-error :chain chain :position position)
+          'flexi-position-error :chain chain :position position)
   (let* ((remainder (nthcdr (* 2 position) (elements chain))))
     (pop (cdr remainder))
     (setf (car remainder) (append (cadr remainder) (car remainder)))
@@ -136,12 +136,12 @@ at position 0 is now at position N."))
 
 (defmethod element* ((chain standard-flexichain) position)
   (assert (< -1 position (nb-elements chain)) ()
-	  'flexi-position-error :chain chain :position position)
+          'flexi-position-error :chain chain :position position)
   (nth (1+ (* 2 position)) (elements chain)))
 
 (defmethod (setf element*) (object (chain standard-flexichain) position)
   (assert (< -1 position (nb-elements chain)) ()
-	  'flexi-position-error :chain chain :position position)
+          'flexi-position-error :chain chain :position position)
   (setf (nth (1+ (* 2 position)) (elements chain)) object))
 
 (defmethod push-start ((chain standard-flexichain) object)
@@ -152,18 +152,18 @@ at position 0 is now at position N."))
 
 (defmethod pop-start ((chain standard-flexichain))
   (prog1 (element* chain 0)
-	 (delete* chain 0)))
+         (delete* chain 0)))
 
 (defmethod pop-end ((chain standard-flexichain))
   (let ((position (1- (nb-elements chain))))
     (prog1 (element* chain position)
-	   (delete* chain position))))
+           (delete* chain position))))
 
 (defmethod rotate ((chain standard-flexichain) &optional (n 1))
   (when (> (nb-elements chain) 1)
     (cond ((plusp n) (loop repeat n do (push-start chain (pop-end chain))))
-	  ((minusp n) (loop repeat (- n) do (push-end chain (pop-start chain))))
-	  (t nil))))
+          ((minusp n) (loop repeat (- n) do (push-end chain (pop-start chain))))
+          (t nil))))
 
 (defclass cursorchain (flexichain)
   ()
@@ -249,7 +249,7 @@ sequence was inserted using INSERT."))
   (:documentation "The standard instantiable subclass of FLEXICURSOR"))
 
 (defmethod initialize-instance :after ((cursor standard-flexicursor)
-				       &rest args &key (position 0)) 
+                                       &rest args &key (position 0)) 
   (declare (ignore args))
   (push cursor (car (nthcdr (* 2 position) (elements (chain cursor))))))
 
@@ -259,9 +259,9 @@ sequence was inserted using INSERT."))
 
 (defmethod cursor-pos ((cursor standard-flexicursor))
   (loop for sublist on (elements (chain cursor)) by #'cddr
-	for pos from 0
-	when (member cursor (car sublist) :test #'eq)
-	  do (return pos)))
+        for pos from 0
+        when (member cursor (car sublist) :test #'eq)
+          do (return pos)))
 
 (defun sublist-of-cursor (cursor)
   (nthcdr (* 2 (cursor-pos cursor)) (elements (chain cursor))))
@@ -273,9 +273,9 @@ sequence was inserted using INSERT."))
 
 (defmethod (setf cursor-pos) (position (cursor standard-flexicursor))
   (assert (<= 0 position (nb-elements (chain cursor))) ()
-	  'flexi-position-error :chain (chain cursor) :position position)
+          'flexi-position-error :chain (chain cursor) :position position)
   (let ((sublist1 (sublist-of-cursor cursor))
-	(sublist2 (nthcdr (* 2 position) (elements (chain cursor)))))
+        (sublist2 (nthcdr (* 2 position) (elements (chain cursor)))))
     (setf (car sublist1) (remove cursor (car sublist1) :test #'eq))
     (push cursor (car sublist2))))
 
@@ -297,24 +297,24 @@ sequence was inserted using INSERT."))
 (defmethod insert-sequence ((cursor standard-flexicursor) sequence)
   (map nil
        (lambda (object)
-	 (insert cursor object))
+         (insert cursor object))
        sequence))
 
 (defmethod delete> ((cursor standard-flexicursor) &optional (n 1))
   (let ((chain (chain cursor))
         (position (cursor-pos cursor)))
     (assert (plusp n) ()
-	    'flexi-position-error :chain chain :position n)
+            'flexi-position-error :chain chain :position n)
     (loop repeat n
           do (delete* chain position))))
 
 (defmethod delete< ((cursor standard-flexicursor) &optional (n 1))
   (let ((chain (chain cursor))
-	(position (cursor-pos cursor)))
+        (position (cursor-pos cursor)))
     (assert (plusp n) ()
-	    'flexi-position-error :chain chain :position n)
+            'flexi-position-error :chain chain :position n)
     (loop repeat n
-	  do (delete* chain (- position n)))))
+          do (delete* chain (- position n)))))
 
 (defmethod element> ((cursor standard-flexicursor))
   (assert (not (at-end-p cursor)) ()

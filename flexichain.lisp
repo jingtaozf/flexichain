@@ -157,7 +157,7 @@ at position 0 is now at position N."))
 (defun required-space (chain nb-elements)
   (with-slots (min-size expand-factor) chain
      (+ 2 (max (ceiling (* nb-elements expand-factor))
-	       min-size))))	
+               min-size))))
 
 (defmethod initialize-instance :after ((chain standard-flexichain)
                                        &rest initargs
@@ -182,10 +182,10 @@ at position 0 is now at position N."))
      (let* ((data-length (if (> (length initial-contents) initial-nb-elements)
                              (length initial-contents)
                              initial-nb-elements))
-	    (size (required-space chain data-length))
-	    (fill-size (- size data-length 2))
-	    (sentinel-list (make-list 2 :initial-element fill-element))
-	    (fill-list (make-list fill-size :initial-element fill-element)))
+            (size (required-space chain data-length))
+            (fill-size (- size data-length 2))
+            (sentinel-list (make-list 2 :initial-element fill-element))
+            (fill-list (make-list fill-size :initial-element fill-element)))
        (setf buffer
              (if initial-contents
                  (make-array size
@@ -209,10 +209,10 @@ at position 0 is now at position N."))
 (defmacro with-virtual-gap ((bl ds gs ge) chain &body body)
   (let ((c (gensym)))
     `(let* ((,c ,chain)
-	    (,bl (length (slot-value ,c 'buffer)))
-	    (,ds (slot-value ,c 'data-start))
-	    (,gs (slot-value ,c 'gap-start))
-	    (,ge (slot-value ,c 'gap-end)))
+            (,bl (length (slot-value ,c 'buffer)))
+            (,ds (slot-value ,c 'data-start))
+            (,gs (slot-value ,c 'gap-start))
+            (,ge (slot-value ,c 'gap-end)))
        (declare (ignorable ,bl ,ds ,gs ,ge))
        (when (< ,gs ,ds) (incf ,gs ,bl))
        (when (< ,ge ,ds) (incf ,ge ,bl))
@@ -231,9 +231,9 @@ of the CHAIN in the buffer."
   (with-virtual-gap (bl ds gs ge) chain
     (let ((index (+ ds position 1)))
       (when (>= index gs)
-	(incf index (- ge gs)))
+        (incf index (- ge gs)))
       (when (>= index bl)
-	(decf index bl))
+        (decf index bl))
       index)))
 
 (defun index-position (chain index)
@@ -258,9 +258,9 @@ element of the CHAIN."
 (defmethod insert* ((chain standard-flexichain) position object)
   (with-slots (element-type buffer gap-start) chain
      (assert (<= 0 position (nb-elements chain)) ()
-	     'flexi-position-error :chain chain :position position)
+             'flexi-position-error :chain chain :position position)
      (assert (typep object element-type) ()
-	     'flexi-incompatible-type-error :element object :chain chain)
+             'flexi-incompatible-type-error :element object :chain chain)
      (ensure-gap-position chain position)
      (ensure-room chain (1+ (nb-elements chain)))
      (setf (aref buffer gap-start) object)
@@ -271,16 +271,16 @@ element of the CHAIN."
 (defmethod insert-vector* ((chain standard-flexichain) position vector)
   (with-slots (element-type buffer gap-start) chain
      (assert (<= 0 position (nb-elements chain)) ()
-	     'flexi-position-error :chain chain :position position)
-     (assert (subtypep (array-element-type  vector) element-type) ()
-	     'flexi-incompatible-type-error :element vector :chain chain)
+             'flexi-position-error :chain chain :position position)
+     (assert (subtypep (array-element-type vector) element-type) ()
+             'flexi-incompatible-type-error :element vector :chain chain)
      (ensure-gap-position chain position)
      (ensure-room chain (+ (nb-elements chain) (length vector)))
      (loop for elem across vector
-	   do (setf (aref buffer gap-start) elem)
-	      (incf gap-start)
-	      (when (= gap-start (length buffer))
-		(setf gap-start 0)))))
+        do (setf (aref buffer gap-start) elem)
+          (incf gap-start)
+          (when (= gap-start (length buffer))
+            (setf gap-start 0)))))
   
 (defmethod delete* ((chain standard-flexichain) position)
   (with-slots (buffer expand-factor min-size fill-element gap-end) chain
@@ -292,7 +292,7 @@ element of the CHAIN."
     (when (= gap-end (length buffer))
       (setf gap-end 0))
     (when (and (> (length buffer) (+ min-size 2))
-	       (< (+ (nb-elements chain) 2) (/ (length buffer) (square expand-factor))))
+               (< (+ (nb-elements chain) 2) (/ (length buffer) (square expand-factor))))
       (decrease-buffer-size chain))))
 
 (defmethod delete-elements* ((chain standard-flexichain) position n)
@@ -324,15 +324,15 @@ element of the CHAIN."
 (defmethod element* ((chain standard-flexichain) position)
   (with-slots (buffer) chain
      (assert (< -1 position (nb-elements chain)) ()
-	     'flexi-position-error :chain chain :position position)
+             'flexi-position-error :chain chain :position position)
      (aref buffer (position-index chain position))))
 
 (defmethod (setf element*) (object (chain standard-flexichain) position)
   (with-slots (buffer element-type) chain
      (assert (< -1 position (nb-elements chain)) ()
-	     'flexi-position-error :chain chain :position position)
+             'flexi-position-error :chain chain :position position)
      (assert (typep object element-type) ()
-	     'flexi-incompatible-type-error :chain chain :element object)
+             'flexi-incompatible-type-error :chain chain :element object)
      (setf (aref buffer (position-index chain position)) object)))
 
 (defmethod push-start ((chain standard-flexichain) object)
@@ -342,19 +342,21 @@ element of the CHAIN."
   (insert* chain (nb-elements chain) object))
 
 (defmethod pop-start ((chain standard-flexichain))
-  (prog1 (element* chain 0)
-	 (delete* chain 0)))
+  (prog1
+      (element* chain 0)
+    (delete* chain 0)))
 
 (defmethod pop-end ((chain standard-flexichain))
   (let ((position (1- (nb-elements chain))))
-    (prog1 (element* chain position)
-	   (delete* chain position))))
+    (prog1
+        (element* chain position)
+      (delete* chain position))))
 
 (defmethod rotate ((chain standard-flexichain) &optional (n 1))
   (when (> (nb-elements chain) 1)
     (cond ((plusp n) (loop repeat n do (push-start chain (pop-end chain))))
-	  ((minusp n) (loop repeat (- n) do (push-end chain (pop-start chain))))
-	  (t nil))))
+          ((minusp n) (loop repeat (- n) do (push-end chain (pop-start chain))))
+          (t nil))))
 
 (defun move-gap (chain hot-spot)
   "Moves the elements and gap inside the buffer so that
@@ -474,7 +476,7 @@ PUSH-ELEMENTS-RIGHT abcd-----efghijklm 2  =>  ab-----cdefghijklm"
     (let* ((buffer-size (length buffer))
            (rotated-gap-end (if (zerop gap-end) buffer-size gap-end)))
       (move-elements chain buffer buffer
-		     (- rotated-gap-end count) (- gap-start count) gap-start)
+                     (- rotated-gap-end count) (- gap-start count) gap-start)
       (fill-gap chain (- gap-start count) (min gap-start (- rotated-gap-end count)))
       (decf gap-start count)
       (setf gap-end (- rotated-gap-end count))
@@ -488,7 +490,7 @@ HOP-ELEMENTS-LEFT ---abcdefghijklm--- 2  =>  -lmabcdefghijk-----"
     (let* ((buffer-size (length buffer))
            (rotated-gap-start (if (zerop gap-start) buffer-size gap-start)))
       (move-elements chain buffer buffer
-		     (- gap-end count) (- rotated-gap-start count) rotated-gap-start)
+                     (- gap-end count) (- rotated-gap-start count) rotated-gap-start)
       (fill-gap chain (- rotated-gap-start count) rotated-gap-start)
       (setf gap-start (- rotated-gap-start count))
       (decf gap-end count)
