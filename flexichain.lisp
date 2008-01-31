@@ -313,8 +313,7 @@ element of the CHAIN."
             (t (let ((surplus-elements (- n (- (length buffer) gap-end))))
                  (fill-gap chain gap-end (length buffer))
                  (fill-gap chain 0 surplus-elements)
-                 (setf gap-end surplus-elements
-                       data-start (1+ gap-end)))))
+                 (setf gap-end surplus-elements))))
       (when (= gap-end (length buffer))
         (setf gap-end 0))
       (when (and (> (length buffer) (+ min-size 2))
