@@ -5,7 +5,7 @@ PSTEX_T=$(shell ./strip-dependence inputfig $(TEXFILES))
 VERBATIM=$(shell ./strip-dependence verbatimtabinput $(TEXFILES))
 PSTEX=$(subst .pstex_t,.pstex,$(PSTEX_T))
 
-all : $(NAME).ps
+all : $(NAME).ps $(NAME).pdf
 
 %.pstex: %.fig
 	fig2dev -Lpstex -m 0.75  $< $@
@@ -20,6 +20,9 @@ $(NAME).dvi: $(TEXFILES) $(PSTEX_T) $(VERBATIM)
 
 $(NAME).ps: $(NAME).dvi $(PSTEX)
 	dvips $< -o
+
+$(NAME).pdf: $(NAME).dvi $(PSTEX)
+	dvipdf $< $(NAME).pdf
 
 view: $(NAME).ps
 	gv -antialias -scale 1 $<
