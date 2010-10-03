@@ -22,14 +22,13 @@
 (in-package :flexichain)
 
 (defclass flexichain ()
-  ((element-type :initarg :element-type :initform t)
-   (fill-element :initarg :fill-element)
+  ((fill-element :initarg :fill-element)
    (expand-factor :initarg :expand-factor :initform 1.5)
    (min-size :initarg :min-size :initform 5))
   (:documentation "The protocol class for flexichains."))
 
 (defmethod initialize-instance :after ((chain flexichain) &rest initargs
-                                       &key initial-contents)
+                                       &key initial-contents (element-type t))
   (declare (ignore initargs initial-contents))
   (with-slots (expand-factor min-size) chain
     (assert (> expand-factor 1) ()
@@ -39,14 +38,14 @@
             'flexichain-initialization-error
             :cause "MIN-SIZE should be greater than 0."))
   (if (slot-boundp chain 'fill-element)
-      (with-slots (element-type fill-element) chain
+      (with-slots (fill-element) chain
         (assert (typep fill-element element-type) ()
                 'flexichain-initialization-error
                 :cause (format nil "FILL-ELEMENT ~A not of type ~S."
                                fill-element element-type)))
       (multiple-value-bind (element foundp)
           (find-if-2 (lambda (x)
-                       (typep x (slot-value chain 'element-type)))
+                       (typep x element-type))
                      '(nil 0 #\a))
         (if foundp
             (setf (slot-value chain 'fill-element) element)
@@ -163,22 +162,12 @@ at position 0 is now at position N."))
                                        &rest initargs
                                        &key
                                        initial-contents
+				       (element-type t)
                                        (initial-nb-elements 0)
                                        (initial-element nil))
   (declare (ignore initargs))
-  ;; Check initial-contents if provided
-  (unless (null initial-contents)
-    (with-slots (element-type) chain
-      (multiple-value-bind (offending-element foundp)
-          (find-if-2 (lambda (x)
-                       (not (typep x element-type)))
-                     initial-contents)
-        (assert (not foundp) ()
-                'flexi-initialization-error
-                :cause (format nil "Initial element ~A not of type ~S."
-                               offending-element element-type)))))
   ;; Initialize slots
-  (with-slots (element-type fill-element buffer) chain
+  (with-slots (fill-element buffer) chain
      (let* ((data-length (if (> (length initial-contents) initial-nb-elements)
                              (length initial-contents)
                              initial-nb-elements))
@@ -256,11 +245,9 @@ element of the CHAIN."
        (increase-buffer-size chain nb-elements))))
 
 (defmethod insert* ((chain standard-flexichain) position object)
-  (with-slots (element-type buffer gap-start) chain
+  (with-slots (buffer gap-start) chain
      (assert (<= 0 position (nb-elements chain)) ()
              'flexi-position-error :chain chain :position position)
-     (assert (typep object element-type) ()
-             'flexi-incompatible-type-error :element object :chain chain)
      (ensure-gap-position chain position)
      (ensure-room chain (1+ (nb-elements chain)))
      (setf (aref buffer gap-start) object)
@@ -269,11 +256,9 @@ element of the CHAIN."
        (setf gap-start 0))))
   
 (defmethod insert-vector* ((chain standard-flexichain) position vector)
-  (with-slots (element-type buffer gap-start) chain
+  (with-slots (buffer gap-start) chain
      (assert (<= 0 position (nb-elements chain)) ()
              'flexi-position-error :chain chain :position position)
-     (assert (subtypep (array-element-type vector) element-type) ()
-             'flexi-incompatible-type-error :element vector :chain chain)
      (ensure-gap-position chain position)
      (ensure-room chain (+ (nb-elements chain) (length vector)))
      (loop for elem across vector
@@ -327,11 +312,9 @@ element of the CHAIN."
      (aref buffer (position-index chain position))))
 
 (defmethod (setf element*) (object (chain standard-flexichain) position)
-  (with-slots (buffer element-type) chain
+  (with-slots (buffer) chain
      (assert (< -1 position (nb-elements chain)) ()
              'flexi-position-error :chain chain :position position)
-     (assert (typep object element-type) ()
-             'flexi-incompatible-type-error :chain chain :element object)
      (setf (aref buffer (position-index chain position)) object)))
 
 (defmethod push-start ((chain standard-flexichain) object)
@@ -517,10 +500,10 @@ HOP-ELEMENTS-RIGHT ---abcdefghijklm--- 2  =>  -----cdefghijklmab-"
 
 (defmethod resize-buffer ((fc standard-flexichain) new-buffer-size)
   (with-slots (buffer gap-start gap-end
-               fill-element element-type expand-factor) fc
+               fill-element expand-factor) fc
     (let ((buffer-size (length buffer))
           (buffer-after (make-array new-buffer-size
-                                    :element-type element-type
+                                    :element-type (array-element-type buffer)
                                     :initial-element fill-element)))
       (case (gap-location fc)
         ((:gap-empty :gap-middle)
