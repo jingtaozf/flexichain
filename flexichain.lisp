@@ -3,6 +3,7 @@
 ;;;
 ;;; Copyright (C) 2003-2004  Robert Strandh (strandh@labri.fr)
 ;;; Copyright (C) 2003-2004  Matthieu Villeneuve (matthieu.villeneuve@free.fr)
+;;; Copyright (C) 2010       Robert Strandh (strandh@labri.fr)
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public
