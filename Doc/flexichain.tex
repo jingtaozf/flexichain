@@ -568,17 +568,19 @@ This initarg determines the cursorchain with which the cursor is associated.
 
 \Defclass {standard-flexicursor}
 
-The standard instantiable subclass of \cl{flexicursor}. 
+The standard subclass of \cl{flexicursor}.  This class is \emph{not}
+directly instantiable.  Instead use one of the instantiable subclasses
+\cl{left-sticky-flexicursor} or \cl{right-sticky-flexicursor}.
 
 \Defclass {left-sticky-flexicursor}
 
 The standard instantiable class for left-sticky flexicursors.  It is a
-subclass of standard-flexicursor. 
+subclass of \cl{standard-flexicursor}. 
 
 \Defclass {right-sticky-flexicursor}
 
 The standard instantiable class for right-sticky flexicursors.  It is a
-subclass of standard-flexicursor. 
+subclass of \cl{standard-flexicursor}. 
 
 \Defgeneric {chain} {cursor}
 
@@ -636,7 +638,7 @@ object of an incompatible type into an chain.
 
 Insert an object at the position corresponding to that of the cursor. 
 All cursors located at positions greater than the one corresponding to
-the cursor given as argument, as well as left-sticky cursors (possibly
+the cursor given as argument, as well as right-sticky cursors (possibly
 including the one given as argument)  located at the same position as
 the one given as argument will have their positions incremented by
 one. Other cursors are unaffected. 
