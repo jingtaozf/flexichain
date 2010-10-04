@@ -1,2 +1,2 @@
 (defpackage :tester
-    (:use :clim :clim-lisp :flexichain))
+    (:use :common-lisp :flexichain))

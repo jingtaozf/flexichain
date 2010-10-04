@@ -1,3 +1,5 @@
+(in-package :tester)
+
 (defparameter *instructions* '())
 
 (defparameter *ins-del-state* t)
