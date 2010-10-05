@@ -27,7 +27,5 @@
   :depends-on (flexichain)
   :components ((:file "tester-package")
                (:file "stupid" :depends-on ("tester-package"))
-               (:file "rtester" :depends-on ("tester-package" "stupid"))
-               (:file "skiplist-package")
-               (:file "skiplist" :depends-on ("skiplist-package"))))
+               (:file "rtester" :depends-on ("tester-package" "stupid"))))
 
