@@ -247,26 +247,30 @@ element of the CHAIN."
 
 (defmethod insert* ((chain standard-flexichain) position object)
   (with-slots (buffer gap-start) chain
-     (assert (<= 0 position (nb-elements chain)) ()
-             'flexi-position-error :chain chain :position position)
-     (ensure-gap-position chain position)
-     (ensure-room chain (1+ (nb-elements chain)))
-     (setf (aref buffer gap-start) object)
-     (incf gap-start)
-     (when (= gap-start (length buffer))
-       (setf gap-start 0))))
+    (assert (<= 0 position (nb-elements chain)) ()
+	    'flexi-position-error :chain chain :position position)
+    (ensure-gap-position chain position)
+    (ensure-room chain (1+ (nb-elements chain)))
+    (setf (aref buffer gap-start) object)
+    (incf gap-start)
+    (when (= gap-start (length buffer))
+      (setf gap-start 0))))
   
 (defmethod insert-vector* ((chain standard-flexichain) position vector)
   (with-slots (buffer gap-start) chain
-     (assert (<= 0 position (nb-elements chain)) ()
+    (assert (<= 0 position (nb-elements chain)) ()
              'flexi-position-error :chain chain :position position)
-     (ensure-gap-position chain position)
-     (ensure-room chain (+ (nb-elements chain) (length vector)))
-     (loop for elem across vector
-        do (setf (aref buffer gap-start) elem)
-          (incf gap-start)
-          (when (= gap-start (length buffer))
-            (setf gap-start 0)))))
+    (ensure-gap-position chain position)
+    (ensure-room chain (+ (nb-elements chain) (length vector)))
+    (if (>= (+ gap-start (length vector)) (length buffer))
+	(progn
+	  (replace buffer vector :start1 gap-start :end1 (length buffer))
+	  (replace buffer vector
+		   :start2 (- (length buffer) gap-start))
+	  (setf gap-start (- (length vector) (- (length buffer) gap-start))))
+	(progn
+	  (replace buffer vector :start1 gap-start :end1 (+ gap-start (length vector)))
+	  (incf gap-start (length vector))))))
   
 (defmethod delete* ((chain standard-flexichain) position)
   (with-slots (buffer expand-factor min-size fill-element gap-end) chain
