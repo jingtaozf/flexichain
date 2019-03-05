@@ -60,8 +60,7 @@ indicating whether an element was found or not."
     wp)
   #+:corman (ccl:make-weak-pointer object)
   #+:lispworks
-  (let ((array (make-array 1)))
-    (hcl:set-array-weak array t)
+  (let ((array (hcl:make-weak-array 1)))
     (setf (svref array 0) object)
     array)
   #-(or :sbcl :cmu :clisp :allegro :openmcl :corman :lispworks)
